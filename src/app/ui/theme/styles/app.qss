@@ -1,0 +1,155 @@
+/* Token placeholders __NAME__ replaced at runtime (see colors.py). */
+
+QWidget {
+  background-color: __BG_WINDOW__;
+  color: __TEXT_PRIMARY__;
+  font-size: 13px;
+}
+
+QMainWindow::separator {
+  background: __BORDER__;
+}
+
+QGroupBox {
+  background-color: __BG_WIDGET__;
+  border: 1px solid __BORDER__;
+  border-radius: 8px;
+  margin-top: 10px;
+  padding: 10px 12px 12px 12px;
+  font-weight: 600;
+}
+
+QGroupBox::title {
+  subcontrol-origin: margin;
+  left: 12px;
+  padding: 0 6px;
+  color: __TEXT_MUTED__;
+}
+
+QLabel {
+  background: transparent;
+  color: __TEXT_PRIMARY__;
+}
+
+QLabel#metaLabel {
+  color: __TEXT_MUTED__;
+  font-size: 12px;
+}
+
+QLabel#dropZone {
+  background-color: __BG_ELEVATED__;
+  border: 2px dashed __BORDER_DASH__;
+  border-radius: 10px;
+  padding: 16px;
+  color: __TEXT_MUTED__;
+  min-height: 100px;
+}
+
+QPushButton {
+  background-color: __BG_ELEVATED__;
+  border: 1px solid __BORDER__;
+  border-radius: 6px;
+  padding: 6px 14px;
+  min-height: 28px;
+}
+
+QPushButton:hover {
+  border-color: __ACCENT__;
+  color: __TEXT_PRIMARY__;
+}
+
+QPushButton:pressed {
+  background-color: __BG_WIDGET__;
+}
+
+QPushButton:disabled {
+  color: __TEXT_MUTED__;
+  border-color: __BORDER__;
+}
+
+QPushButton#primaryButton {
+  background-color: __ACCENT__;
+  color: #ffffff;
+  border: 1px solid __ACCENT__;
+  font-weight: 600;
+}
+
+QPushButton#primaryButton:hover {
+  background-color: __ACCENT_HOVER__;
+  border-color: __ACCENT_HOVER__;
+}
+
+QPushButton#primaryButton:disabled {
+  background-color: __BG_WIDGET__;
+  border-color: __BORDER__;
+  color: __TEXT_MUTED__;
+}
+
+QLineEdit, QComboBox {
+  background-color: __BG_INPUT__;
+  border: 1px solid __BORDER__;
+  border-radius: 6px;
+  padding: 5px 8px;
+  min-height: 26px;
+}
+
+QComboBox::drop-down {
+  border: none;
+  width: 22px;
+}
+
+QComboBox QAbstractItemView {
+  background-color: __BG_ELEVATED__;
+  color: __TEXT_PRIMARY__;
+  selection-background-color: __SELECTION_BG__;
+  selection-color: __SELECTION_TEXT__;
+  border: 1px solid __BORDER__;
+}
+
+QCheckBox {
+  spacing: 8px;
+}
+
+QProgressBar {
+  background-color: __PROGRESS_TRACK__;
+  border: none;
+  border-radius: 4px;
+  min-height: 10px;
+  text-align: center;
+  color: __TEXT_PRIMARY__;
+}
+
+QProgressBar::chunk {
+  background-color: __PROGRESS_CHUNK__;
+  border-radius: 4px;
+}
+
+QTextEdit#transcriptView {
+  background-color: __BG_ELEVATED__;
+  border: 1px solid __BORDER__;
+  border-radius: 8px;
+  padding: 8px 10px;
+  selection-background-color: __SELECTION_BG__;
+  selection-color: __SELECTION_TEXT__;
+}
+
+QTextEdit#previewSnippet {
+  background-color: __BG_INPUT__;
+  border: 1px solid __BORDER__;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+QScrollArea {
+  background: transparent;
+  border: none;
+}
+
+QDialog {
+  background-color: __BG_WINDOW__;
+}
+
+QDialog QDialogButtonBox QPushButton {
+  min-width: 72px;
+}

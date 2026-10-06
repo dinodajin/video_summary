@@ -1,0 +1,5 @@
+pyannote.audio
+torch
+PySide6
+faster-whisper
+python-dotenv
