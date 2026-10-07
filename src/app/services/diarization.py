@@ -62,13 +62,14 @@ class DiarizationService:
             ) from exc
 
         model_path = self._config.resolve_diarization_model_path()
+        local_model_ready = self._is_local_model_ready(model_path)
         model_repo = self._config.models.diarization.main_repo
         source = self._config.diarization_source.strip().lower()
         token = self._resolve_hf_token()
 
         try:
             if source == "local":
-                if not model_path.exists():
+                if not local_model_ready:
                     raise RuntimeError(
                         "DIARIZATION_SOURCE=local 이지만 로컬 모델 경로가 없습니다. "
                         "DIARIZATION_MODEL_PATH를 확인해 주세요."
@@ -82,7 +83,7 @@ class DiarizationService:
                     )
                 self._pipeline = self._load_pipeline_from_hf(Pipeline, model_repo, token)
             elif source == "auto":
-                if model_path.exists():
+                if local_model_ready:
                     self._pipeline = Pipeline.from_pretrained(str(model_path))
                 elif token:
                     self._pipeline = self._load_pipeline_from_hf(Pipeline, model_repo, token)
@@ -135,6 +136,12 @@ class DiarizationService:
         raise RuntimeError(
             "지원되지 않는 화자 구분 출력 형식입니다. pyannote 버전 호환을 확인해 주세요."
         )
+
+    @staticmethod
+    def _is_local_model_ready(model_path: Path) -> bool:
+        if not model_path.exists() or not model_path.is_dir():
+            return False
+        return (model_path / "config.yaml").exists() or (model_path / "pipeline.yaml").exists()
 
     @staticmethod
     def _load_pipeline_from_hf(pipeline_cls, model_repo: str, token: str):

@@ -39,8 +39,21 @@ class SettingsPanel(QGroupBox):
 
         self.whisper_model_edit = QLineEdit(DEFAULT_WHISPER_MODEL)
 
-        self.diarization_check = QCheckBox("화자 구분 사용 (권장)")
+        self.diarization_check = QCheckBox("화자 구분 사용")
         self.diarization_check.setChecked(True)
+        self.hf_token_edit = QLineEdit()
+        self.hf_token_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.hf_token_edit.setPlaceholderText("hf_...  (pyannote 화자 구분 모델 접근용)")
+
+        self.summary_provider_combo = QComboBox()
+        self.summary_provider_combo.addItem("Ollama (로컬 권장)", "ollama")
+        self.summary_provider_combo.addItem("OpenAI 호환 API", "openai")
+        self.summary_provider_combo.currentIndexChanged.connect(self._sync_summary_ui)
+        self.summary_model_edit = QLineEdit("qwen3:8b")
+        self.summary_base_url_edit = QLineEdit("http://localhost:11434")
+        self.summary_api_key_edit = QLineEdit()
+        self.summary_api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.summary_api_key_edit.setPlaceholderText("외부 API 사용 시에만 입력")
 
         self.theme_combo.currentIndexChanged.connect(self._on_ui_theme_changed)
 
@@ -61,8 +74,14 @@ class SettingsPanel(QGroupBox):
 
         form.addRow("Whisper 모델", self.whisper_model_edit)
         form.addRow(self.diarization_check)
+        form.addRow("Hugging Face Token", self.hf_token_edit)
+        form.addRow("요약 엔진", self.summary_provider_combo)
+        form.addRow("요약 모델", self.summary_model_edit)
+        form.addRow("요약 API 주소", self.summary_base_url_edit)
+        form.addRow("요약 API Key", self.summary_api_key_edit)
         self.setLayout(form)
         self._sync_lang_ui()
+        self._sync_summary_ui()
 
     def _init_theme_selection(self) -> None:
         initial = load_theme()
@@ -84,6 +103,23 @@ class SettingsPanel(QGroupBox):
         is_manual = self.get_lang_mode() == "manual"
         self.lang_combo.setEnabled(is_manual)
 
+    def _sync_summary_ui(self) -> None:
+        is_ollama = self.get_summary_provider() == "ollama"
+        self.summary_api_key_edit.setEnabled(not is_ollama)
+
+    def apply_config(self, config) -> None:
+        self.whisper_model_edit.setText(config.models.whisper.name)
+        self.diarization_check.setChecked(config.diarization_enabled)
+        self.hf_token_edit.setText(config.diarization_hf_token)
+
+        idx = self.summary_provider_combo.findData(config.summary_provider)
+        if idx >= 0:
+            self.summary_provider_combo.setCurrentIndex(idx)
+        self.summary_model_edit.setText(config.summary_model)
+        self.summary_base_url_edit.setText(config.summary_base_url)
+        self.summary_api_key_edit.setText(config.summary_api_key)
+        self._sync_summary_ui()
+
     def get_lang_mode(self) -> str:
         return str(self.lang_mode_combo.currentData())
 
@@ -93,5 +129,20 @@ class SettingsPanel(QGroupBox):
     def diarization_enabled(self) -> bool:
         return self.diarization_check.isChecked()
 
+    def get_hf_token(self) -> str:
+        return self.hf_token_edit.text().strip()
+
     def get_whisper_model(self) -> str:
         return self.whisper_model_edit.text().strip() or DEFAULT_WHISPER_MODEL
+
+    def get_summary_provider(self) -> str:
+        return str(self.summary_provider_combo.currentData())
+
+    def get_summary_model(self) -> str:
+        return self.summary_model_edit.text().strip()
+
+    def get_summary_base_url(self) -> str:
+        return self.summary_base_url_edit.text().strip()
+
+    def get_summary_api_key(self) -> str:
+        return self.summary_api_key_edit.text().strip()

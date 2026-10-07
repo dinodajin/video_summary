@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-DEFAULT_WHISPER_MODEL = "turbo"
+DEFAULT_WHISPER_MODEL = "small"
 DEFAULT_WHISPER_DEVICE = "auto"
 DEFAULT_WHISPER_COMPUTE_TYPE = "auto"
 DEFAULT_DIARIZATION_MODEL_PATH = ".models/pyannote/speaker-diarization-3.1"
@@ -60,6 +60,12 @@ class AppConfig:
     diarization_clustering_threshold: float | None = None
     timestamp_in_transcript: bool = True
     speaker_label_style: str = "ko"
+    summary_provider: str = "ollama"
+    summary_model: str = "qwen3:4b-instruct"
+    summary_base_url: str = "http://localhost:11434"
+    summary_api_key: str = ""
+    summary_timeout_sec: int = 300
+    summary_chunk_chars: int = 7000
 
     @classmethod
     def load(cls) -> "AppConfig":
@@ -132,6 +138,12 @@ class AppConfig:
             diarization_clustering_threshold=diarization_clustering_threshold,
             timestamp_in_transcript=_get_bool("TIMESTAMP_IN_TRANSCRIPT", True),
             speaker_label_style=os.getenv("SPEAKER_LABEL_STYLE", "ko"),
+            summary_provider=os.getenv("SUMMARY_PROVIDER", "ollama"),
+            summary_model=os.getenv("SUMMARY_MODEL", "qwen3:4b-instruct"),
+            summary_base_url=os.getenv("SUMMARY_BASE_URL", "http://localhost:11434"),
+            summary_api_key=_get_env(("SUMMARY_API_KEY", "OPENAI_API_KEY"), ""),
+            summary_timeout_sec=int(os.getenv("SUMMARY_TIMEOUT_SEC", "300")),
+            summary_chunk_chars=int(os.getenv("SUMMARY_CHUNK_CHARS", "7000")),
         )
 
     def resolve_ffmpeg(self) -> str:
