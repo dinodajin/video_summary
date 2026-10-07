@@ -155,19 +155,28 @@ def build_speaker_preview(
 
 
 def build_speaker_label_mapping(
-    mentor_label: str | None,
+    mentor_label: str | list[str] | tuple[str, ...] | set[str] | None,
     distinct_speakers: list[str],
     *,
     map_others_to_trainee: bool = SPEAKER_MAP_OTHERS_TO_TRAINEE_DEFAULT,
     trainee_label: str = SPEAKER_DEFAULT_TRAINEE_LABEL,
 ) -> dict[str, str]:
-    """멘토 표시명 1개와 나머지 화자에 대한 치환 맵을 만든다."""
-    if not mentor_label or not mentor_label.strip():
+    """선택한 한 명 이상의 멘토와 나머지 화자에 대한 치환 맵을 만든다.
+
+    기존 호출과의 호환을 위해 단일 문자열도 허용한다.
+    """
+    if mentor_label is None:
         return {}
-    mentor = mentor_label.strip()
+    if isinstance(mentor_label, str):
+        mentors = {mentor_label.strip()} if mentor_label.strip() else set()
+    else:
+        mentors = {str(label).strip() for label in mentor_label if str(label).strip()}
+    if not mentors:
+        return {}
+
     mapping: dict[str, str] = {}
     for spk in distinct_speakers:
-        if spk == mentor:
+        if spk in mentors:
             mapping[spk] = "멘토"
         elif map_others_to_trainee:
             mapping[spk] = trainee_label
