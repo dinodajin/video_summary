@@ -3,3 +3,5 @@ torch
 PySide6
 faster-whisper
 python-dotenv
+soundfile
+python-docx

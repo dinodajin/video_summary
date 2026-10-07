@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
     QGroupBox,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QScrollArea,
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QAbstractItemView,
 )
 
 from app.constants import (
@@ -28,24 +30,26 @@ class SpeakerRoleDialog(QDialog):
         parent: QWidget | None,
         previews: list[SpeakerPreview],
         *,
-        initial_mentor: str = "",
+        initial_mentors: list[str] | None = None,
         initial_map_others: bool = SPEAKER_MAP_OTHERS_TO_TRAINEE_DEFAULT,
         initial_trainee_label: str = SPEAKER_DEFAULT_TRAINEE_LABEL,
     ):
         super().__init__(parent)
         self.setWindowTitle("멘토 화자 지정")
-        self.resize(620, 560)
+        self.resize(680, 620)
 
-        self._mentor_combo = QComboBox()
-        self._mentor_combo.addItem("(지정 안 함)", "")
+        initial_mentor_set = set(initial_mentors or [])
+        self._mentor_list = QListWidget()
+        self._mentor_list.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self._mentor_list.setMaximumHeight(130)
         for p in previews:
-            self._mentor_combo.addItem(p.speaker_label, p.speaker_label)
-        if initial_mentor:
-            idx = self._mentor_combo.findData(initial_mentor)
-            if idx >= 0:
-                self._mentor_combo.setCurrentIndex(idx)
+            item = QListWidgetItem(p.speaker_label)
+            item.setData(256, p.speaker_label)  # Qt.UserRole without extra Qt import
+            self._mentor_list.addItem(item)
+            if p.speaker_label in initial_mentor_set:
+                item.setSelected(True)
 
-        self._map_others = QCheckBox("나머지 화자를 동일 라벨로 묶기")
+        self._map_others = QCheckBox("선택하지 않은 화자는 모두 교육생으로 묶기")
         self._map_others.setChecked(initial_map_others)
         self._trainee_edit = QLineEdit(initial_trainee_label)
         self._trainee_edit.setPlaceholderText(SPEAKER_DEFAULT_TRAINEE_LABEL)
@@ -60,11 +64,11 @@ class SpeakerRoleDialog(QDialog):
             inner_layout.addWidget(self._make_preview_block(p))
         inner_layout.addStretch(1)
         scroll.setWidget(inner)
-        scroll.setMinimumHeight(220)
+        scroll.setMinimumHeight(250)
         preview_layout.addWidget(scroll)
 
         form = QFormLayout()
-        form.addRow("멘토:", self._mentor_combo)
+        form.addRow("멘토 화자(복수 선택 가능):", self._mentor_list)
         form.addRow(self._map_others)
         form.addRow("나머지 라벨:", self._trainee_edit)
 
@@ -75,8 +79,9 @@ class SpeakerRoleDialog(QDialog):
         buttons.rejected.connect(self.reject)
 
         intro = QLabel(
-            "멘토를 고르면 전사 패널의 화자 라벨이 멘토·교육생 등으로 바뀝니다.\n"
-            "아래 각 칸의 한 줄 특징·인용은 전사에서 뽑은 통계 미리보기이며 LLM 출력이 아닙니다."
+            "pyannote가 먼저 목소리별로 화자를 나눕니다. 여기서는 그중 멘토에 해당하는 화자를 "
+            "한 명 이상 선택하면 선택된 화자는 모두 '멘토', 나머지는 '교육생'으로 표시합니다.\n"
+            "즉 실제 화자 수가 많아도 최종 보고서에서는 멘토/교육생 두 역할만 남길 수 있습니다."
         )
         intro.setObjectName("metaLabel")
         intro.setWordWrap(True)
@@ -116,8 +121,18 @@ class SpeakerRoleDialog(QDialog):
             v.addWidget(QLabel("(짧은 발화만 있어 샘플이 없습니다. 목록에서 추정해 선택하세요.)"))
         return box
 
+    def mentor_labels(self) -> list[str]:
+        labels: list[str] = []
+        for item in self._mentor_list.selectedItems():
+            label = str(item.data(256) or item.text()).strip()
+            if label:
+                labels.append(label)
+        return labels
+
+    # 이전 코드와의 호환용. 첫 번째 멘토만 반환한다.
     def mentor_label(self) -> str:
-        return str(self._mentor_combo.currentData() or "").strip()
+        labels = self.mentor_labels()
+        return labels[0] if labels else ""
 
     def map_others_to_trainee(self) -> bool:
         return self._map_others.isChecked()
